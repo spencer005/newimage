@@ -2,7 +2,7 @@
 set -ouex pipefail
 
 # Enable vanilla-next kernel repo
-dnf5 -y copr enable group_kernel-vanilla/next
+dnf5 -y copr enable @kernel-vanilla/next
 
 # Make sure none of the akmods/matched-kernel baggage survives into this image
 for pkg in kernel-modules-akmods kernel-devel-matched akmods dkms; do
