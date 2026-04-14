@@ -41,7 +41,8 @@ dnf5 -y install \
     wl-clipboard \
     foot \
     tmux \
-    fish
+    fish \
+    distrobox
 
 # Keep the example service if you want it, otherwise remove this
 systemctl enable podman.socket
