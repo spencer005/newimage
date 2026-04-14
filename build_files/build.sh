@@ -17,7 +17,9 @@ dnf5 -y distro-sync \
     kernel-core \
     kernel-modules \
     kernel-modules-core \
-    kernel-modules-extra \
+    kernel-modules-extra
+
+dnf5 -y install \
     kernel-devel \
     kernel-headers
 
