@@ -1,24 +1,50 @@
-#!/bin/bash
-
+#!/usr/bin/bash
 set -ouex pipefail
 
-### Install packages
+# Enable vanilla-next kernel repo
+dnf5 -y copr enable group_kernel-vanilla/next
 
-# Packages can be installed from any enabled yum repo on the image.
-# RPMfusion repos are available by default in ublue main images
-# List of rpmfusion packages can be found here:
-# https://mirrors.rpmfusion.org/mirrorlist?path=free/fedora/updates/43/x86_64/repoview/index.html&protocol=https&redirect=1
+# Make sure none of the akmods/matched-kernel baggage survives into this image
+for pkg in kernel-modules-akmods kernel-devel-matched akmods dkms; do
+    if rpm -q "${pkg}"; then
+        dnf5 -y remove "${pkg}"
+    fi
+done
 
-# this installs a package from fedora repos
-dnf5 install -y tmux 
+# Pull the kernel stack from the vanilla-next COPR
+dnf5 -y install \
+    kernel \
+    kernel-core \
+    kernel-modules \
+    kernel-modules-core \
+    kernel-modules-extra \
+    kernel-devel
 
-# Use a COPR Example:
-#
-# dnf5 -y copr enable ublue-os/staging
-# dnf5 -y install package
-# Disable COPRs so they don't end up enabled on the final image:
-# dnf5 -y copr disable ublue-os/staging
+# Minimal stuff you probably still want on a self-managed WM system
+dnf5 -y install \
+    git \
+    gcc \
+    gcc-c++ \
+    clang \
+    make \
+    cmake \
+    meson \
+    ninja-build \
+    pkgconf-pkg-config \
+    wayland-devel \
+    wayland-protocols-devel \
+    libxkbcommon-devel \
+    pixman-devel \
+    cairo-devel \
+    pango-devel \
+    seatd \
+    wl-clipboard \
+    foot \
+    tmux \
+    fish
 
-#### Example for enabling a System Unit File
-
+# Keep the example service if you want it, otherwise remove this
 systemctl enable podman.socket
+
+# Cleanup
+dnf5 clean all
