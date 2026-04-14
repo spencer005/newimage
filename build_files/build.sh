@@ -11,14 +11,15 @@ for pkg in kernel-modules-akmods kernel-devel-matched akmods dkms; do
     fi
 done
 
-# Pull the kernel stack from the vanilla-next COPR
-dnf5 -y install \
+# Actually switch the installed kernel stack to the newest available build
+dnf5 -y distro-sync \
     kernel \
     kernel-core \
     kernel-modules \
     kernel-modules-core \
     kernel-modules-extra \
-    kernel-devel
+    kernel-devel \
+    kernel-headers
 
 # Minimal stuff you probably still want on a self-managed WM system
 dnf5 -y install \
