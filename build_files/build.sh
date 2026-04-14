@@ -42,7 +42,17 @@ dnf5 -y install \
     foot \
     tmux \
     fish \
-    distrobox
+    distrobox \
+    pipewire \
+    wireplumber \
+    pipewire-alsa \
+    pipewire-pulseaudio \
+    pipewire-utils \
+    alsa-utils \
+    pavucontrol \
+    rtkit \
+    xdg-desktop-portal \
+    xdg-desktop-portal-wlr
 
 # Keep the example service if you want it, otherwise remove this
 systemctl enable podman.socket
