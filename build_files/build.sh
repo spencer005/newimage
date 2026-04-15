@@ -24,8 +24,17 @@ dnf5 -y install \
     kernel-headers
 
 KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
-dracut --force --kver "$KVER" --add ostree
-lsinitrd "/boot/initramfs-${KVER}.img" | grep -E 'ostree|prepare-root|sysroot'
+
+# bootc images should not ship kernel/initramfs in /boot
+rm -f /boot/initramfs-* /boot/vmlinuz-* || true
+
+# regenerate initramfs in the canonical bootc location
+dracut --force --add ostree "/usr/lib/modules/${KVER}/initramfs.img" "${KVER}"
+
+test -e "/usr/lib/modules/${KVER}/vmlinuz"
+test -e "/usr/lib/modules/${KVER}/initramfs.img"
+
+ls -lh "/usr/lib/modules/${KVER}/vmlinuz" "/usr/lib/modules/${KVER}/initramfs.img"
 
 # Minimal stuff you probably still want on a self-managed WM system
 dnf5 -y install \
