@@ -23,6 +23,10 @@ dnf5 -y install \
     kernel-devel \
     kernel-headers
 
+KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
+dracut --force --kver "$KVER" --add ostree
+lsinitrd "/boot/initramfs-${KVER}.img" | grep -E 'ostree|prepare-root|sysroot'
+
 # Minimal stuff you probably still want on a self-managed WM system
 dnf5 -y install \
     git \
@@ -62,6 +66,3 @@ systemctl enable podman.socket
 
 # Cleanup
 dnf5 clean all
-
-kver="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n1)"
-dracut -f "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
