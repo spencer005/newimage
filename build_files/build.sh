@@ -11,6 +11,11 @@ for pkg in kernel-modules-akmods kernel-devel-matched akmods dkms; do
     fi
 done
 
+# hack
+if [ -e /usr/lib/kernel/install.d/50-depmod.install ]; then
+    ln -sf 50-depmod.install /usr/lib/kernel/install.d/01-depmod.install
+fi
+
 # Actually switch the installed kernel stack to the newest available build
 dnf5 -y distro-sync \
     kernel \
@@ -23,13 +28,13 @@ dnf5 -y install \
     kernel-devel \
     kernel-headers
 
-KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
+#KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
 
 # bootc images should not ship kernel/initramfs in /boot
-rm -f /boot/initramfs-* /boot/vmlinuz-* || true
+#rm -f /boot/initramfs-* /boot/vmlinuz-* || true
 
 # regenerate initramfs in the canonical bootc location
-dracut --force --add ostree "/usr/lib/modules/${KVER}/initramfs.img" "${KVER}"
+#dracut --force --add ostree "/usr/lib/modules/${KVER}/initramfs.img" "${KVER}"
 
 test -e "/usr/lib/modules/${KVER}/vmlinuz"
 test -e "/usr/lib/modules/${KVER}/initramfs.img"
