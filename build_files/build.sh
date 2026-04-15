@@ -63,4 +63,5 @@ systemctl enable podman.socket
 # Cleanup
 dnf5 clean all
 
-dracut --force --regenerate-all
+kver="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n1)"
+dracut -f "/usr/lib/modules/${kver}/initramfs.img" "${kver}"
