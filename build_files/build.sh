@@ -28,7 +28,7 @@ dnf5 -y install \
     kernel-devel \
     kernel-headers
 
-#KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
+KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
 
 # bootc images should not ship kernel/initramfs in /boot
 #rm -f /boot/initramfs-* /boot/vmlinuz-* || true
@@ -92,3 +92,5 @@ find /usr/lib/ostree-boot -type f -print -exec sed -n '1,120p' {} \; 2>/dev/null
 
 echo "=== grep for ostree kernel arg ==="
 grep -R "ostree=" /boot/loader/entries /usr/lib/ostree-boot 2>/dev/null || true
+
+rm -rf /tmp/* /var/tmp/* || true
