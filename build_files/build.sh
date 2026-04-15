@@ -62,3 +62,5 @@ systemctl enable podman.socket
 
 # Cleanup
 dnf5 clean all
+
+dracut --force --regenerate-all
