@@ -66,3 +66,15 @@ systemctl enable podman.socket
 
 # Cleanup
 dnf5 clean all
+
+echo "=== installed kernel packages ==="
+rpm -q kernel kernel-core kernel-modules kernel-devel kernel-headers || true
+
+echo "=== loader entries under /boot ==="
+find /boot/loader/entries -maxdepth 1 -type f -print -exec sed -n '1,120p' {} \; 2>/dev/null || true
+
+echo "=== ostree boot entries under /usr/lib/ostree-boot ==="
+find /usr/lib/ostree-boot -type f -print -exec sed -n '1,120p' {} \; 2>/dev/null || true
+
+echo "=== grep for ostree kernel arg ==="
+grep -R "ostree=" /boot/loader/entries /usr/lib/ostree-boot 2>/dev/null || true
