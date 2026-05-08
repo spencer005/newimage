@@ -2,3 +2,6 @@ cosign.key
 _build_*
 output
 _build-*/**
+build_files/copr-src/
+build_files/kernel-work/
+build_files/rpms/
