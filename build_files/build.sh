@@ -98,38 +98,50 @@ dnf5 -y install \
     xdg-desktop-portal \
     xdg-desktop-portal-wlr
 
-# Keep Fedora's sudo policy/PAM files installed, but prefer sudo-rs for
-# interactive use by placing it earlier in the default PATH.
-dnf5 -y install \
-    sudo \
-    sudo-rs
+# Use sudo-rs without shipping the classic sudo package. The Fedora sudo-rs
+# package intentionally installs sudo-rs/visudo-rs, so provide the familiar
+# command names after removing sudo.
+dnf5 -y install sudo-rs
+rm -f \
+    /etc/dnf/protected.d/sudo.conf \
+    /usr/etc/dnf/protected.d/sudo.conf \
+    /usr/share/dnf5/libdnf.conf.d/protect-sudo.conf
+dnf5 -y remove --no-autoremove sudo
 
 install -d -m 0750 -o root -g root /etc/sudoers.d
-find /etc/sudoers.d -type f -exec chown root:root {} + -exec chmod 0440 {} +
-if [ -e /usr/etc/sudoers ] && [ ! -e /etc/sudoers ]; then
-    install -m 0440 -o root -g root /usr/etc/sudoers /etc/sudoers
-else
-    chown root:root /etc/sudoers
-    chmod 0440 /etc/sudoers
-fi
+cat > /etc/sudoers <<'EOF'
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/bin"
+root ALL=(ALL:ALL) ALL
+@includedir /etc/sudoers.d
+EOF
+cat > /etc/sudoers.d/00-wheel <<'EOF'
+%wheel ALL=(ALL:ALL) ALL
+EOF
+chown root:root /etc/sudoers /etc/sudoers.d/00-wheel
+chmod 0440 /etc/sudoers /etc/sudoers.d/00-wheel
 
-if [ -e /usr/etc/sudo.conf ] && [ ! -e /etc/sudo.conf ]; then
-    install -m 0640 -o root -g root /usr/etc/sudo.conf /etc/sudo.conf
-fi
-if [ -e /usr/etc/pam.d/sudo ] && [ ! -e /etc/pam.d/sudo ]; then
-    install -m 0644 -o root -g root /usr/etc/pam.d/sudo /etc/pam.d/sudo
-fi
-if [ -e /usr/etc/pam.d/sudo-i ] && [ ! -e /etc/pam.d/sudo-i ]; then
-    install -m 0644 -o root -g root /usr/etc/pam.d/sudo-i /etc/pam.d/sudo-i
-fi
-if [ -e /usr/etc/dnf/protected.d/sudo.conf ] && [ ! -e /etc/dnf/protected.d/sudo.conf ]; then
-    install -D -m 0644 -o root -g root /usr/etc/dnf/protected.d/sudo.conf /etc/dnf/protected.d/sudo.conf
-fi
+install -d -m 0755 -o root -g root /etc/pam.d
+cat > /etc/pam.d/sudo <<'EOF'
+#%PAM-1.0
+auth       include      system-auth
+account    include      system-auth
+password   include      system-auth
+session    optional     pam_keyinit.so revoke
+session    required     pam_limits.so
+session    include      system-auth
+EOF
+cat > /etc/pam.d/sudo-i <<'EOF'
+#%PAM-1.0
+auth       include      sudo
+account    include      sudo
+password   include      sudo
+session    optional     pam_keyinit.so force revoke
+session    include      sudo
+EOF
 
-/usr/bin/visudo -c
-install -d -m 0755 -o root -g root /usr/local/bin
-ln -sf /usr/bin/sudo-rs /usr/local/bin/sudo
-ln -sf /usr/bin/visudo-rs /usr/local/bin/visudo
+/usr/bin/visudo-rs --check /etc/sudoers
+ln -sf /usr/bin/sudo-rs /usr/bin/sudo
+ln -sf /usr/bin/visudo-rs /usr/bin/visudo
 
 # DirtyFrag mitigation: install directives block manual and dependency loads.
 install -d -m 0755 -o root -g root /usr/lib/modprobe.d
