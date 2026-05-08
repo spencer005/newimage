@@ -127,6 +127,7 @@ if [ -e /usr/etc/dnf/protected.d/sudo.conf ] && [ ! -e /etc/dnf/protected.d/sudo
 fi
 
 /usr/bin/visudo -c
+install -d -m 0755 -o root -g root /usr/local/bin
 ln -sf /usr/bin/sudo-rs /usr/local/bin/sudo
 ln -sf /usr/bin/visudo-rs /usr/local/bin/visudo
 
