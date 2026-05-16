@@ -129,9 +129,10 @@ rm -f \
     /usr/etc/dnf/protected.d/sudo.conf \
     /usr/share/dnf5/libdnf.conf.d/protect-sudo.conf
 dnf5 -y remove --no-autoremove sudo
+rm -rf /usr/etc
 
-install -d -m 0755 -o root -g root /usr/etc /usr/lib/tmpfiles.d
-install -d -m 0750 -o root -g root /etc/sudoers.d /usr/etc/sudoers.d
+install -d -m 0755 -o root -g root /usr/lib/tmpfiles.d /usr/share/factory/etc/pam.d
+install -d -m 0750 -o root -g root /etc/sudoers.d /usr/share/factory/etc/sudoers.d
 cat > /etc/sudoers <<'EOF'
 Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/bin"
 root ALL=(ALL:ALL) ALL
@@ -142,13 +143,8 @@ cat > /etc/sudoers.d/00-wheel <<'EOF'
 EOF
 chown root:root /etc/sudoers /etc/sudoers.d/00-wheel
 chmod 0440 /etc/sudoers /etc/sudoers.d/00-wheel
-install -m 0440 -o root -g root /etc/sudoers /usr/etc/sudoers
-install -m 0440 -o root -g root /etc/sudoers.d/00-wheel /usr/etc/sudoers.d/00-wheel
-cat > /usr/lib/tmpfiles.d/sudoers.conf <<'EOF'
-d /etc/sudoers.d 0750 root root -
-C /etc/sudoers - - - - /usr/etc/sudoers
-C /etc/sudoers.d/00-wheel - - - - /usr/etc/sudoers.d/00-wheel
-EOF
+install -m 0440 -o root -g root /etc/sudoers /usr/share/factory/etc/sudoers
+install -m 0440 -o root -g root /etc/sudoers.d/00-wheel /usr/share/factory/etc/sudoers.d/00-wheel
 
 install -d -m 0755 -o root -g root /etc/pam.d
 cat > /etc/pam.d/sudo <<'EOF'
@@ -167,6 +163,15 @@ account    include      sudo
 password   include      sudo
 session    optional     pam_keyinit.so force revoke
 session    include      sudo
+EOF
+install -m 0644 -o root -g root /etc/pam.d/sudo /usr/share/factory/etc/pam.d/sudo
+install -m 0644 -o root -g root /etc/pam.d/sudo-i /usr/share/factory/etc/pam.d/sudo-i
+cat > /usr/lib/tmpfiles.d/sudoers.conf <<'EOF'
+d /etc/sudoers.d 0750 root root -
+C /etc/sudoers - - - - /usr/share/factory/etc/sudoers
+C /etc/sudoers.d/00-wheel - - - - /usr/share/factory/etc/sudoers.d/00-wheel
+C /etc/pam.d/sudo - - - - /usr/share/factory/etc/pam.d/sudo
+C /etc/pam.d/sudo-i - - - - /usr/share/factory/etc/pam.d/sudo-i
 EOF
 
 /usr/bin/visudo-rs --check /etc/sudoers
