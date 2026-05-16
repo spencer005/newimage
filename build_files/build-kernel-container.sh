@@ -39,7 +39,14 @@ rpm -Uvh --define "_topdir $TOPDIR" /src/kernel.src.rpm >/dev/null
 
 find "$TOPDIR/SOURCES" -type f -name "kernel-*.config" -print0 |
   xargs -0r sed -i \
-    -e "s/^CONFIG_CRYPTO_USER_API_AEAD=.*/# CONFIG_CRYPTO_USER_API_AEAD is not set/"
+    -e "s/^CONFIG_CRYPTO_USER_API_AEAD=.*/# CONFIG_CRYPTO_USER_API_AEAD is not set/" \
+    -e "s/^CONFIG_NTSYNC=.*/CONFIG_NTSYNC=m/" \
+    -e "s/^# CONFIG_NTSYNC is not set/CONFIG_NTSYNC=m/"
+
+if ! grep -q "^CONFIG_NTSYNC=m$" "$TOPDIR/SOURCES/kernel-x86_64-fedora.config"; then
+  echo "CONFIG_NTSYNC was not enabled in the x86_64 Fedora kernel config." >&2
+  exit 1
+fi
 
 rpmbuild -ba "$TOPDIR/SPECS/kernel.spec" \
   --define "_topdir $TOPDIR" \

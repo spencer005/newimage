@@ -45,6 +45,28 @@ fi
 
 KVER="$(rpm -q kernel-core --qf '%{VERSION}-%{RELEASE}.%{ARCH}\n' | sort -V | tail -n1)"
 
+NTSYNC_CONFIG="$(grep -E '^(CONFIG_NTSYNC=|# CONFIG_NTSYNC is not set)' "/usr/lib/modules/${KVER}/config" || true)"
+case "${NTSYNC_CONFIG}" in
+    "CONFIG_NTSYNC=y")
+        echo "=== ntsync is built into kernel ${KVER} ==="
+        ;;
+    "CONFIG_NTSYNC=m")
+        if ! compgen -G "/usr/lib/modules/${KVER}/kernel/drivers/misc/ntsync.ko*" >/dev/null; then
+            echo "CONFIG_NTSYNC=m, but the ntsync module is missing for kernel ${KVER}." >&2
+            exit 1
+        fi
+
+        install -d -m 0755 -o root -g root /usr/lib/modules-load.d
+        echo ntsync > /usr/lib/modules-load.d/ntsync.conf
+        echo "=== ntsync module will load at boot for kernel ${KVER} ==="
+        ;;
+    *)
+        echo "CONFIG_NTSYNC is not enabled for kernel ${KVER}." >&2
+        echo "Rebuild the kernel with CONFIG_NTSYNC=y or CONFIG_NTSYNC=m." >&2
+        exit 1
+        ;;
+esac
+
 if grep -q '^CONFIG_CRYPTO_USER_API_AEAD=y$' "/usr/lib/modules/${KVER}/config"; then
     echo "CONFIG_CRYPTO_USER_API_AEAD is built in; CopyFail cannot be mitigated with modprobe.d." >&2
     echo "Rebuild the kernel with CONFIG_CRYPTO_USER_API_AEAD disabled or modular." >&2
@@ -108,7 +130,8 @@ rm -f \
     /usr/share/dnf5/libdnf.conf.d/protect-sudo.conf
 dnf5 -y remove --no-autoremove sudo
 
-install -d -m 0750 -o root -g root /etc/sudoers.d
+install -d -m 0755 -o root -g root /usr/etc /usr/lib/tmpfiles.d
+install -d -m 0750 -o root -g root /etc/sudoers.d /usr/etc/sudoers.d
 cat > /etc/sudoers <<'EOF'
 Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/bin"
 root ALL=(ALL:ALL) ALL
@@ -119,6 +142,13 @@ cat > /etc/sudoers.d/00-wheel <<'EOF'
 EOF
 chown root:root /etc/sudoers /etc/sudoers.d/00-wheel
 chmod 0440 /etc/sudoers /etc/sudoers.d/00-wheel
+install -m 0440 -o root -g root /etc/sudoers /usr/etc/sudoers
+install -m 0440 -o root -g root /etc/sudoers.d/00-wheel /usr/etc/sudoers.d/00-wheel
+cat > /usr/lib/tmpfiles.d/sudoers.conf <<'EOF'
+d /etc/sudoers.d 0750 root root -
+C /etc/sudoers - - - - /usr/etc/sudoers
+C /etc/sudoers.d/00-wheel - - - - /usr/etc/sudoers.d/00-wheel
+EOF
 
 install -d -m 0755 -o root -g root /etc/pam.d
 cat > /etc/pam.d/sudo <<'EOF'
