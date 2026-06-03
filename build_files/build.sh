@@ -108,7 +108,6 @@ dnf5 -y install \
     foot \
     tmux \
     fish \
-    distrobox \
     pipewire \
     wireplumber \
     pipewire-alsa \
