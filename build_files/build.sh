@@ -4,6 +4,10 @@ set -ouex pipefail
 LOCAL_KERNEL_RPM_DIR="/ctx/rpms"
 KERNEL_SOURCE="copr"
 
+# Fedora bootc ships toolbox, which depends on flatpak-session-helper. This
+# image does not ship Flatpak components.
+dnf5 -y remove toolbox flatpak-session-helper
+
 # Make sure none of the akmods/matched-kernel baggage survives into this image
 for pkg in kernel-modules-akmods kernel-devel-matched akmods dkms; do
     if rpm -q "${pkg}"; then
@@ -29,6 +33,8 @@ if ls "${LOCAL_KERNEL_RPM_DIR}"/kernel-core-*.rpm >/dev/null 2>&1; then
         "${LOCAL_KERNEL_RPM_DIR}"/kernel-headers-*.rpm
 else
     echo "=== using COPR kernel-vanilla/next packages ==="
+    # Fedora bootc does not include the COPR subcommand.
+    dnf5 -y install dnf5-plugins
     dnf5 -y copr enable @kernel-vanilla/next
 
     dnf5 -y distro-sync \
