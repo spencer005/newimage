@@ -37,14 +37,12 @@ else
     dnf5 -y install dnf5-plugins
     dnf5 -y copr enable @kernel-vanilla/next
 
-    dnf5 -y distro-sync \
+    dnf5 -y install --allowerasing \
         kernel \
         kernel-core \
         kernel-modules \
         kernel-modules-core \
-        kernel-modules-extra
-
-    dnf5 -y install \
+        kernel-modules-extra \
         kernel-devel \
         kernel-headers
 fi
@@ -133,7 +131,7 @@ rm -f \
     /etc/dnf/protected.d/sudo.conf \
     /usr/etc/dnf/protected.d/sudo.conf \
     /usr/share/dnf5/libdnf.conf.d/protect-sudo.conf
-dnf5 -y remove --no-autoremove sudo
+rpm -e --nodeps sudo sudo-python-plugin
 rm -rf /usr/etc
 
 install -d -m 0755 -o root -g root /usr/lib/tmpfiles.d /usr/share/factory/etc/pam.d
