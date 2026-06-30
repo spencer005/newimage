@@ -92,6 +92,7 @@ ls -lh "/usr/lib/modules/${KVER}/vmlinuz" "/usr/lib/modules/${KVER}/initramfs.im
 
 # Minimal stuff you probably still want on a self-managed WM system
 dnf5 -y install \
+    glibc-langpack-en \
     git \
     gcc \
     gcc-c++ \
@@ -122,6 +123,7 @@ dnf5 -y install \
     rtkit \
     xdg-desktop-portal \
     xdg-desktop-portal-wlr
+
 
 # Use sudo-rs without shipping the classic sudo package. The Fedora sudo-rs
 # package intentionally installs sudo-rs/visudo-rs, so provide the familiar
